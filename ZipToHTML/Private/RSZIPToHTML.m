@@ -16,6 +16,7 @@
         <html> \
     \
             <head> \
+                <link href=\"https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css\" rel=\"stylesheet\"> \
                 <link href=\"https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons\" rel=\"stylesheet\"> \
                 <link href=\"https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css\" rel=\"stylesheet\"> \
                 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui\"> \
@@ -77,6 +78,7 @@
                   \
                         treeElement[file] = { \
                             name: file + \" (Compressed: \" + item.compressedSize + \" bytes, Uncompressed: \" + item.uncompressedSize + \" bytes)\", \
+                            file: file.replace(/^.*[.]/g, ''), \
                             compressedSize: item.compressedSize, \
                             uncompressedSize: item.uncompressedSize, \
                         }; \
@@ -106,7 +108,8 @@
                     new Vue({ \
                         el: '#app', \
                         data: () => ({ \
-                            open: ['public'], \
+                            open: ['ZIP Contents:'], \
+                            \"open-all\": true, \
                             files: { \
                                 html: 'mdi-language-html5', \
                                 js: 'mdi-nodejs', \
