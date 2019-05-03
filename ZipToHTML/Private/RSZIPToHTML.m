@@ -10,13 +10,13 @@
 
 @implementation RSZipToHTML
 
-+(NSString*)htmlForItems:(NSString*)items {
++(NSString*)htmlForFile:(NSString*)file withItems:(NSString*)items {
     NSString* html = [NSString stringWithFormat:@" \
         <!DOCTYPE html> \
         <html> \
     \
             <head> \
-                <link href=\"https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css\" rel=\"stylesheet\"> \
+                <link href=\"https://cdn.materialdesignicons.com/3.6.95/css/materialdesignicons.min.css\" rel=\"stylesheet\"> \
                 <link href=\"https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons\" rel=\"stylesheet\"> \
                 <link href=\"https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css\" rel=\"stylesheet\"> \
                 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui\"> \
@@ -26,7 +26,18 @@
                 <div id=\"app\"> \
                     <v-app> \
                         <v-content> \
-                            <v-treeview v-model=\"tree\" :open=\"open\" :items=\"items\" activatable item-key=\"name\" open-on-click> \
+                      <v-toolbar> \
+                      <v-spacer></v-spacer> \
+                      <v-btn @click=\"expand\"> \
+                      <span>Expand all</span> \
+                      <v-icon>mdi-chevron-down-circle-outline</v-icon> \
+                      </v-btn> \
+                      <v-btn @click=\"collapse\"> \
+                      <span>Collapse all</span> \
+                      <v-icon>mdi-chevron-up-circle-outline</v-icon> \
+                      </v-btn> \
+                      </v-toolbar> \
+                      <v-treeview v-model=\"tree\" :open-all=\"true\" :open.sync=\"openFolders\" :items=\"items\" activatable item-key=\"name\" open-on-click> \
                                 <template v-slot:prepend=\"{ item, open }\"> \
                                     <v-icon v-if=\"!item.file\"> \
                                         {{ open ? 'mdi-folder-open' : 'mdi-folder' }} \
@@ -48,7 +59,7 @@
                       return value.replace(/\\s/g, '').length == 0; \
                       } \
                       \
-                  function convertItems(items) { \
+                  function convertItems(zipfile, items) { \
                     items = items.sort(function (a, b) { \
                         return a.name - b.name \
                     }); \
@@ -90,7 +101,7 @@
                         childrenToArray(element); \
                     }); \
                   \
-                      return [{ name: 'ZIP Contents:', children: tree }]; \
+                      return [{ name: zipfile, children: tree }]; \
                   } \
                   \
                   function childrenToArray(element) { \
@@ -102,14 +113,25 @@
                     } \
                   } \
                   function getItems() { \
-                    return convertItems(%@); \
+                    return convertItems('%@', %@); \
                   } \
     \
                     new Vue({ \
                         el: '#app', \
+                        methods: { \
+                            expand() { \
+                                this.openFolders = this.allFolders; \
+                            }, \
+                            collapse() { \
+                                this.openFolders = []; \
+                            } \
+                        }, \
+                        mounted() { \
+                          this.allFolders = this.openFolders; \
+                        }, \
                         data: () => ({ \
-                            open: ['ZIP Contents:'], \
-                            \"open-all\": true, \
+                            openFolders: [], \
+                            allFolders: [], \
                             files: { \
                                 html: 'mdi-language-html5', \
                                 js: 'mdi-nodejs', \
@@ -121,14 +143,14 @@
                                 xls: 'mdi-file-excel' \
                             }, \
                             tree: [], \
-                            items: getItems() \
+                            items: getItems(), \
                         }) \
                       }); \
                 </script> \
             </body> \
     \
         </html> \
-    ", items];
+    ", file, items];
     
     return html;
 }
@@ -150,6 +172,8 @@
 
 +(NSString*)htmlForZIP:(NSURL*)url {
     NSLog(@"FileURL: %@", url);
+    NSString* file = [url lastPathComponent];
+    NSLog(@"File: %@", file);
     NSMutableArray* items = [NSMutableArray array];
     NSError* error;
     ZZArchive* archive = [ZZArchive archiveWithURL:url error:&error];
@@ -164,7 +188,7 @@
         }
         
         NSString* json = [self arrayToJSON:items];
-        NSString* html = [self htmlForItems:json];
+        NSString* html = [self htmlForFile:file withItems:json];
         return html;
     }
     
