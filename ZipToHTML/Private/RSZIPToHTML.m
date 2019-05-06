@@ -25,29 +25,33 @@
             <body> \
                 <div id=\"app\"> \
                     <v-app> \
-                        <v-content> \
-                      <v-toolbar> \
-                      <v-spacer></v-spacer> \
-                      <v-btn @click=\"expand\"> \
-                      <span>Expand all</span> \
-                      <v-icon>mdi-chevron-down-circle-outline</v-icon> \
-                      </v-btn> \
-                      <v-btn @click=\"collapse\"> \
-                      <span>Collapse all</span> \
-                      <v-icon>mdi-chevron-up-circle-outline</v-icon> \
-                      </v-btn> \
-                      </v-toolbar> \
-                      <v-treeview v-model=\"tree\" :open-all=\"true\" :open.sync=\"openFolders\" :items=\"items\" activatable item-key=\"name\" open-on-click> \
-                                <template v-slot:prepend=\"{ item, open }\"> \
-                                    <v-icon v-if=\"!item.file\"> \
-                                        {{ open ? 'mdi-folder-open' : 'mdi-folder' }} \
-                                    </v-icon> \
-                                    <v-icon v-else> \
-                                        {{ files[item.file] }} \
-                                    </v-icon> \
-                                </template> \
-                            </v-treeview> \
-                        </v-content> \
+                      <v-content> \
+                          <v-toolbar> \
+                            <v-toolbar-title>{{ zipFile }}</v-toolbar-title> \
+                            <v-spacer></v-spacer> \
+                            <v-btn @click=\"expand\"> \
+                                <span>Expand all</span> \
+                                <v-icon>mdi-chevron-down-circle-outline</v-icon> \
+                            </v-btn> \
+                            <v-btn @click=\"collapse\"> \
+                                <span>Collapse all</span> \
+                                <v-icon>mdi-chevron-up-circle-outline</v-icon> \
+                            </v-btn> \
+                          </v-toolbar> \
+                          <v-treeview v-model=\"tree\" :open-all=\"true\" :open.sync=\"openFolders\" :items=\"items\" activatable item-key=\"name\" open-on-click> \
+                            <template v-slot:prepend=\"{ item, open }\"> \
+                                <v-icon v-if=\"!item.file\"> \
+                                    {{ open ? 'mdi-folder-open' : 'mdi-folder' }} \
+                                </v-icon> \
+                                <v-icon v-else> \
+                                    {{ files[item.file] }} \
+                                </v-icon> \
+                            </template> \
+                            <template v-slot:label=\"{ item }\"> \
+                                {{ item.name }} \
+                            </template> \
+                        </v-treeview> \
+                      </v-content> \
                     </v-app> \
                 </div> \
     \
@@ -59,7 +63,7 @@
                       return value.replace(/\\s/g, '').length == 0; \
                       } \
                       \
-                  function convertItems(zipfile, items) { \
+                  function convertItems(items) { \
                     items = items.sort(function (a, b) { \
                         return a.name - b.name \
                     }); \
@@ -101,7 +105,7 @@
                         childrenToArray(element); \
                     }); \
                   \
-                      return [{ name: zipfile, children: tree }]; \
+                      return tree; \
                   } \
                   \
                   function childrenToArray(element) { \
@@ -113,7 +117,7 @@
                     } \
                   } \
                   function getItems() { \
-                    return convertItems('%@', %@); \
+                    return convertItems(%@); \
                   } \
     \
                     new Vue({ \
@@ -130,6 +134,7 @@
                           this.allFolders = this.openFolders; \
                         }, \
                         data: () => ({ \
+                            zipFile: '%@', \
                             openFolders: [], \
                             allFolders: [], \
                             files: { \
@@ -150,7 +155,7 @@
             </body> \
     \
         </html> \
-    ", file, items];
+    ", items, file];
     
     return html;
 }
